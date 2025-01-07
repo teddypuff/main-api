@@ -31,6 +31,7 @@ export class LeadsController {
     if (!headers.project) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
+
     lead.project = headers.project;
     lead.country = country ?? null;
 
@@ -73,8 +74,8 @@ export class LeadsController {
         return this.notificationService.sendTransactionalEmail({
           data: {
             to: lead.email,
-            templateId: +project.providerSettings?.email?.templates?.welcome,
-            templateData: { name: lead.email },
+            templateId: project.providerSettings?.email?.templates?.welcome,
+            templateData: { user: lead.email },
           },
           settings: project.providerSettings?.email.apiSettings,
         });

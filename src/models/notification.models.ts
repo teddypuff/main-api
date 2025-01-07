@@ -33,14 +33,14 @@ export class EmailDataHtml extends EmailBaseModel {
 }
 
 export class EmailDataTransactional extends EmailBaseModel {
-  templateId: number;
+  templateId: any;
   templateData: {};
 }
 
 export class EmailServiceDto extends EmailApiSettings {
   html?: string;
   text?: string;
-  templateId: number;
+  templateId: any;
   templateData: {};
 }
 
