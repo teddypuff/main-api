@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "types": ["jest", "node"],
+    "baseUrl": "./",
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "jest.config.ts",
+    "src/e2e-support/**/*.ts",
+    "**/*.test.ts",
+    "**/*.int-spec.ts",
+    "**/*.spec.ts",
+    "**/*.e2e-spec.ts",
+    "**/*.d.ts"
+  ]
+}
