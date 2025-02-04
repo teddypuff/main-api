@@ -83,6 +83,9 @@ export class UserDetailsService {
     userDetails.refUrl = data.refUrl ? data.refUrl : userDetails.refUrl;
     userDetails.country = data.country ? data.country : userDetails.country;
     userDetails.message = 'updated from lead';
+    userDetails.ipAddress = data.ipAddress
+      ? data.ipAddress
+      : userDetails.ipAddress;
 
     return await this.userDetailsRepository.save(userDetails);
   }
