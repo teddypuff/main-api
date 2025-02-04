@@ -71,6 +71,12 @@ export class LeadEntity extends BaseEntity {
   brokerId: number;
 
   @Column({
+    name: 'ip_address',
+    nullable: true,
+  })
+  ipAddress?: string;
+
+  @Column({
     name: 'source',
     nullable: true,
   })

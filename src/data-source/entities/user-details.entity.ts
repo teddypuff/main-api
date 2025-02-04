@@ -79,6 +79,9 @@ export class UserDetailsEntity extends BaseEntity {
   })
   referralCode: string;
 
+  @Column({ name: 'ip_address', nullable: true })
+  ipAddress: string;
+
   @Column({
     name: 'message',
     nullable: true,

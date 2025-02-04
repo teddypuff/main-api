@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  Req,
 } from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { GetCountry } from '~/common/decorators/country.decorator';
@@ -27,6 +28,7 @@ export class LeadsController {
     @Body() lead: CreateLeadReq,
     @GetCountry() country: string,
     @Headers() headers,
+    @Req() req,
   ): Promise<any> {
     if (!headers.project) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
@@ -44,6 +46,7 @@ export class LeadsController {
         mobile: lead.mobile,
         refUrl: lead.source,
         country: lead.country,
+        ipAddress: (req.headers['cf-connecting-ip'] as string) || req.ip,
       },
     );
 
@@ -67,6 +70,7 @@ export class LeadsController {
           mobile: lead.mobile,
           refUrl: lead.source,
           country: lead.country,
+          ipAddress: (req.headers['cf-connecting-ip'] as string) || req.ip,
         },
       );
 

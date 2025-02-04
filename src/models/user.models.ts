@@ -39,6 +39,9 @@ export class UserDetailsModel {
   refUrl?: string;
 
   @IsOptional()
+  ipAddress?: string;
+
+  @IsOptional()
   referralCode?: string;
 
   @IsOptional()

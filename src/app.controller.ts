@@ -158,7 +158,7 @@ export class AppController {
   ): Promise<any> {
     try {
       userRequest.projectName = projectCache.name;
-      userRequest.ip = req.ip;
+      userRequest.ip = (req.headers['cf-connecting-ip'] as string) || req.ip;
       userRequest.country = country ?? null;
       const userRequestEntity =
         await this.userRequestsService.userRequestHandler(userRequest);
@@ -264,7 +264,7 @@ export class AppController {
     @Headers() headers,
     @Req() req,
   ): Promise<any> {
-    return (req.headers['cf-connecting-ip'] as string) || req.ip;
+    // return (req.headers['cf-connecting-ip'] as string) || req.ip;
     // console.log('currencyEnum', currencyEnumKey);
     // const projects = await this.projectsService.getAllCachedProjects();
     // const response = await this.notificationService.sendTelegramDocument(
