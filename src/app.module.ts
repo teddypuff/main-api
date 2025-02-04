@@ -52,7 +52,6 @@ const entities = Object.values(entityList);
       database: process.env.DATABASE_NAME,
       autoLoadEntities: true,
       synchronize: true,
-      ssl: { rejectUnauthorized: false },
       entities: [...entities],
     }),
     ScheduleModule.forRoot(),
