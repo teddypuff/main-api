@@ -264,6 +264,7 @@ export class AppController {
     @Headers() headers,
     @Req() req,
   ): Promise<any> {
+    return (req.headers['cf-connecting-ip'] as string) || req.ip;
     // console.log('currencyEnum', currencyEnumKey);
     // const projects = await this.projectsService.getAllCachedProjects();
     // const response = await this.notificationService.sendTelegramDocument(
