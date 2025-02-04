@@ -1,4 +1,4 @@
-name: Presale API Production Deployment
+name: TDP API Production Deployment
 on:
   push:
     branches:
@@ -33,6 +33,6 @@ jobs:
           aws_secret_key: ${{ secrets.AWS_ACCESS_KEY_SECRET }}
           application_name: ${{ secrets.AWS_APPLICATION_NAME}}
           environment_name: ${{ secrets.AWS_ENVIRONMENT_NAME }}
-          version_label: 'FLF-Api-${{ steps.format-time.outputs.replaced }}'
+          version_label: 'TDP-${{ steps.format-time.outputs.replaced }}'
           region: ${{ secrets.AWS_ECR_REGION }}
           deployment_package: deploy.zip
