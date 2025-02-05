@@ -18,7 +18,6 @@ import { CommonService } from './common/common.service';
 import { Networks } from './common/models/enums/network.enum';
 import { UserRequestsService } from './requests/user_requests.service';
 import { UserRequestModel } from './models/requests.models';
-import { GetCountry } from './common/decorators/country.decorator';
 import { UserDetailsService } from './user_details/user_details.service';
 import { SalesService } from './sales/sales.service';
 import { SalesStatus } from './common/models/enums/sales-status.enum';
@@ -57,8 +56,8 @@ export class AppController {
   @Get('health')
   async getStatus(): Promise<any> {
     return {
-      status: 'ok',
-      version: '1.0.8',
+      status: 'OK!',
+      version: '1.0.0',
     };
   }
 
@@ -192,8 +191,6 @@ export class AppController {
   async userRequestHandler(
     @Body() userRequest: UserRequestModel,
     @ProjectDetails() projectCache: ProjectCache,
-    //@Req() req,
-    //@GetCountry() country: string,
     @UserLocation() userLocation: UserLocationModel,
   ): Promise<any> {
     try {
