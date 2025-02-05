@@ -51,7 +51,7 @@ export class CreateLeadReq {
   walletAddress?: string;
 
   @IsOptional()
-  ip_address?: string;
+  ipAddress?: string;
 
   @Transform(({ value }) => {
     return value.toLowerCase();

@@ -31,6 +31,7 @@ export class LeadsController {
     @Body() lead: CreateLeadReq,
     @UserLocation() userLocation: UserLocationModel,
     @Headers() headers,
+    @Req() req,
   ): Promise<any> {
     if (!headers.project) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
@@ -38,7 +39,7 @@ export class LeadsController {
 
     lead.project = headers.project;
     lead.country = userLocation.country ?? null;
-    lead.ip_address = userLocation.ip ?? null;
+    lead.ipAddress = userLocation.ip ?? null;
 
     await this.userDetailsService.updateUserDetailsByWalletAddress(
       lead.walletAddress,
@@ -49,7 +50,7 @@ export class LeadsController {
         mobile: lead.mobile,
         refUrl: lead.source,
         country: lead.country,
-        ipAddress: userLocation.ip ?? null,
+        ipAddress: userLocation.ip || req.ip,
       },
     );
 
@@ -73,7 +74,7 @@ export class LeadsController {
           mobile: lead.mobile,
           refUrl: lead.source,
           country: lead.country,
-          ipAddress: userLocation.ip ?? null,
+          ipAddress: userLocation.ip || req.ip,
         },
       );
 
