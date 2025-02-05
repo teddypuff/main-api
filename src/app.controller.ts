@@ -56,8 +56,8 @@ export class AppController {
   @Get('health')
   async getStatus(): Promise<any> {
     return {
-      status: 'ok',
-      version: '1.0.8',
+      status: 'OK!',
+      version: '1.0.0',
     };
   }
 
