@@ -34,7 +34,6 @@ namespace NodeJS {
     DEVELOPMENT_ENV: boolean;
 
     PROJECT_NAME: string;
-    PROJECT_WEBSITE: string;
 
     SENTRY_DSN: string;
     INFURA_API_KEY: string;

@@ -130,6 +130,15 @@ export class SalesService {
     });
   }
 
+  async getSalesByAddressV2(
+    walletAddress: string,
+    project: string,
+  ): Promise<SalesEntity[]> {
+    return await this.salesRepository.find({
+      where: { userWalletAddress: walletAddress, projectName: project },
+    });
+  }
+
   async getTokenBalance(
     walletAddress: string,
     projectName: string,

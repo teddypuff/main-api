@@ -8,9 +8,9 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export interface Response<T> {
-  statusCode: number;
+  status_code: number;
   message: string;
-  data: T;
+  response: T;
 }
 
 @Injectable()
@@ -24,9 +24,9 @@ export class TransformInterceptor<T>
     // @ts-ignore
     return next.handle().pipe(
       map((data) => ({
-        statusCode: context.switchToHttp().getResponse().statusCode,
+        status_code: context.switchToHttp().getResponse().statusCode,
         message: data?.message ?? 'Success',
-        data: {
+        response: {
           result: data?.result ?? data,
           total: data?.total,
           page: data?.page,

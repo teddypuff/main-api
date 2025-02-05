@@ -13,6 +13,10 @@ import { NotificationService } from '~/notification/notification.service';
 import { ProjectsService } from '~/projects/projects.service';
 import { UserDetailsService } from '~/user_details/user_details.service';
 import { CreateLeadReq } from '../models';
+import {
+  UserLocation,
+  UserLocationModel,
+} from '~/common/decorators/user_location.decorator';
 
 @Controller('leads')
 export class LeadsController {
@@ -26,7 +30,8 @@ export class LeadsController {
   @Post()
   async createLead(
     @Body() lead: CreateLeadReq,
-    @GetCountry() country: string,
+    //@GetCountry() country: string,
+    @UserLocation() location: UserLocationModel,
     @Headers() headers,
     @Req() req,
   ): Promise<any> {
@@ -35,7 +40,7 @@ export class LeadsController {
     }
 
     lead.project = headers.project;
-    lead.country = country ?? null;
+    lead.country = location.country ?? null;
 
     await this.userDetailsService.updateUserDetailsByWalletAddress(
       lead.walletAddress,
@@ -46,7 +51,7 @@ export class LeadsController {
         mobile: lead.mobile,
         refUrl: lead.source,
         country: lead.country,
-        ipAddress: (req.headers['cf-connecting-ip'] as string) || req.ip,
+        ipAddress: location.ip || req.ip,
       },
     );
 
@@ -70,7 +75,7 @@ export class LeadsController {
           mobile: lead.mobile,
           refUrl: lead.source,
           country: lead.country,
-          ipAddress: (req.headers['cf-connecting-ip'] as string) || req.ip,
+          ipAddress: location.ip || req.ip,
         },
       );
 
