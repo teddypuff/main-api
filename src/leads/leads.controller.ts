@@ -8,7 +8,6 @@ import {
   Req,
 } from '@nestjs/common';
 import { LeadsService } from './leads.service';
-import { GetCountry } from '~/common/decorators/country.decorator';
 import { NotificationService } from '~/notification/notification.service';
 import { ProjectsService } from '~/projects/projects.service';
 import { UserDetailsService } from '~/user_details/user_details.service';
@@ -30,17 +29,16 @@ export class LeadsController {
   @Post()
   async createLead(
     @Body() lead: CreateLeadReq,
-    //@GetCountry() country: string,
-    @UserLocation() location: UserLocationModel,
+    @UserLocation() userLocation: UserLocationModel,
     @Headers() headers,
-    @Req() req,
   ): Promise<any> {
     if (!headers.project) {
       throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
     }
 
     lead.project = headers.project;
-    lead.country = location.country ?? null;
+    lead.country = userLocation.country ?? null;
+    lead.ip_address = userLocation.ip ?? null;
 
     await this.userDetailsService.updateUserDetailsByWalletAddress(
       lead.walletAddress,
@@ -51,7 +49,7 @@ export class LeadsController {
         mobile: lead.mobile,
         refUrl: lead.source,
         country: lead.country,
-        ipAddress: location.ip || req.ip,
+        ipAddress: userLocation.ip ?? null,
       },
     );
 
@@ -75,7 +73,7 @@ export class LeadsController {
           mobile: lead.mobile,
           refUrl: lead.source,
           country: lead.country,
-          ipAddress: location.ip || req.ip,
+          ipAddress: userLocation.ip ?? null,
         },
       );
 
