@@ -30,6 +30,10 @@ import { CounterService } from './counter/counter.service';
 import { BonusValidationRes, ProjectCache, TransactionModel } from './models';
 import { ConfigService } from '@nestjs/config';
 import { Currencies } from './common/models/enums/currencies.enum';
+import {
+  UserLocation,
+  UserLocationModel,
+} from './common/decorators/user_location.decorator';
 
 @Controller()
 export class AppController {
@@ -149,17 +153,53 @@ export class AppController {
     );
   }
 
+  @Get('user-history/:wallet_address')
+  async getUserTransactions(
+    @ProjectDetails() projectCache: ProjectCache,
+    @Param('wallet_address') walletAddress: string,
+  ) {
+    if (this.commonService.isWalletValid(walletAddress) === false) {
+      throw new HttpException(
+        'Wallet address not correct!',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const response = [];
+
+    const transacrtions = await this.salesService.getSalesByAddressV2(
+      walletAddress,
+      projectCache.name,
+    );
+
+    transacrtions.forEach((tx) => {
+      const transaction = {
+        success: tx.isActive,
+        usd: +tx.usdWorth,
+        stage: +tx.stageNumber,
+        price: +tx.tokenPrice,
+        token_amount: +tx.issuedTokenAmount,
+        utc_date: tx.createdAt,
+      };
+
+      response.push(transaction);
+    });
+
+    return response;
+  }
+
   @Post('user-request')
   async userRequestHandler(
     @Body() userRequest: UserRequestModel,
     @ProjectDetails() projectCache: ProjectCache,
-    @Req() req,
-    @GetCountry() country: string,
+    //@Req() req,
+    //@GetCountry() country: string,
+    @UserLocation() userLocation: UserLocationModel,
   ): Promise<any> {
     try {
       userRequest.projectName = projectCache.name;
-      userRequest.ip = (req.headers['cf-connecting-ip'] as string) || req.ip;
-      userRequest.country = country ?? null;
+      userRequest.ip = userLocation.ip ?? null;
+      userRequest.country = userLocation.country ?? null;
       const userRequestEntity =
         await this.userRequestsService.userRequestHandler(userRequest);
 
@@ -169,10 +209,10 @@ export class AppController {
       );
       if (
         userDetailsEntity &&
-        (userDetailsEntity?.country != country ||
+        (userDetailsEntity?.country != userLocation.country ||
           userDetailsEntity?.refUrl != userRequest.refUrl)
       ) {
-        userDetailsEntity.country = userRequest.country;
+        //userDetailsEntity.country = userRequest.country;
         userDetailsEntity.refUrl = userRequest.refUrl;
         await this.userDetailsService.createUserDetails(userDetailsEntity);
       }
