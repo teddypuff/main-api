@@ -135,7 +135,10 @@ export class SalesService {
     project: string,
   ): Promise<SalesEntity[]> {
     return await this.salesRepository.find({
-      where: { userWalletAddress: walletAddress, projectName: project },
+      where: {
+        userWalletAddress: walletAddress.toLocaleLowerCase(),
+        projectName: project,
+      },
     });
   }
 
