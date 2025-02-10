@@ -103,7 +103,7 @@ export class AppController {
     let dailyReports = await this.reportsService.getDailyReports();
 
     const todayReport = await this.reportsService.getDailyNumbersByProject(
-      'Teddypuff',
+      'teddypuff',
       new Date().toISOString().split('T')[0],
     );
 
