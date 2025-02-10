@@ -127,6 +127,25 @@ export class ReportsService {
       const dateString = `${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}`;
 
       for await (const project of projects) {
+        const dailyReport: DailyReportsModel = {
+          projectName: project.name,
+          date: new Date(dateString),
+          txCount: 0,
+          uniqueBuyers: 0,
+          totalConfirmedUSD: 0,
+          highestPaymentUSD: 0,
+          averagePaymentUSD: 0,
+          q1TxPercent: 0,
+          q2TxPercent: 0,
+          q3TxPercent: 0,
+          q4TxPercent: 0,
+          ethPercentage: 0,
+          bnbPercentage: 0,
+          maticPercentage: 0,
+          usdtBep20Percentage: 0,
+          usdtErc20Percentage: 0,
+        };
+
         let dailyProjectReport = await this.getDailyNumbersByProject(
           project.name,
           dateString,
@@ -150,9 +169,9 @@ export class ReportsService {
             usdtBep20Percentage: dailyProjectReport.usdtBep20Percentage,
             usdtErc20Percentage: dailyProjectReport.usdtErc20Percentage,
           };
-
-          await this.dailyReportsRepository.save(dailyReport);
         }
+
+        await this.dailyReportsRepository.save(dailyReport);
       }
     } catch (error) {
       console.log(error.message);
