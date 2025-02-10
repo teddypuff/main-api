@@ -57,7 +57,7 @@ export class AppController {
   async getStatus(): Promise<any> {
     return {
       status: 'OK!',
-      version: '1.0.0',
+      version: '1.0.1',
     };
   }
 
