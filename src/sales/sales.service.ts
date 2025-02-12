@@ -451,7 +451,7 @@ export class SalesService {
     }
 
     const project =
-      await this.commonService.getProjectByNameFromCache('Teddypuff');
+      await this.commonService.getProjectByNameFromCache('teddypuff');
 
     const [maxValueEntity] = await this.salesRepository.find({
       order: {
@@ -521,7 +521,7 @@ export class SalesService {
     }
 
     const project =
-      await this.commonService.getProjectByNameFromCache('Teddypuff');
+      await this.commonService.getProjectByNameFromCache('teddypuff');
 
     const [maxValueEntity] = await this.salesRepository.find({
       order: {
