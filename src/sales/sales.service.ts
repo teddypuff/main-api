@@ -428,7 +428,7 @@ export class SalesService {
   }
 
   //@Cron('0 */10 * * * *')
-  //@Cron(CronExpression.EVERY_30_MINUTES)
+  // @Cron(CronExpression.EVERY_30_MINUTES)
   async autoFtSale() {
     let payToken: Currencies;
     let tokenAmount: number;
@@ -495,6 +495,65 @@ export class SalesService {
         payAmount: +tokenAmount.toFixed(6),
         payCurrency: payToken.toLocaleUpperCase(),
         usdWorth: randomAmount,
+        tokenPrice: project.currentStage.tokenPrice,
+        issuedToken: issuedTokens,
+      },
+    );
+  }
+
+  async manualFtSale(amount: number) {
+    let payToken: Currencies;
+    let tokenAmount: number;
+
+    const randomToken = Math.floor(Math.random() * 2) + 1;
+    const tokenPrices: TokenPricesModel =
+      await this.cacheManager.get('token_prices');
+
+    switch (randomToken) {
+      case 1:
+        payToken = Currencies.ETHEREUM;
+        tokenAmount = amount / tokenPrices.ETH;
+        break;
+      case 2:
+        payToken = Currencies.BNB;
+        tokenAmount = amount / tokenPrices.BNB;
+        break;
+    }
+
+    const project =
+      await this.commonService.getProjectByNameFromCache('Teddypuff');
+
+    const [maxValueEntity] = await this.salesRepository.find({
+      order: {
+        transactionId: 'DESC',
+      },
+      take: 1,
+    });
+
+    const issuedTokens = Math.floor(
+      (1 / project.currentStage.tokenPrice) * amount,
+    );
+
+    const newSale: SalesModel = {
+      projectName: project.name,
+      saleType: SalesTypes.FT,
+      stageNumber: project.currentStage.stageNumber,
+      tokenPrice: project.currentStage.tokenPrice,
+      issuedTokenAmount: issuedTokens,
+      usdWorth: amount,
+      userWalletAddress: '0x1234567890123456789012345678901234567890',
+      transactionId: maxValueEntity.transactionId + 1,
+    };
+
+    await this.createSale(newSale);
+
+    await this.notificationService.sendTelegramDocument(
+      project.providerSettings.telegramSettings.botApiKey,
+      project.providerSettings.telegramSettings.chatId,
+      {
+        payAmount: +tokenAmount.toFixed(6),
+        payCurrency: payToken.toLocaleUpperCase(),
+        usdWorth: amount,
         tokenPrice: project.currentStage.tokenPrice,
         issuedToken: issuedTokens,
       },

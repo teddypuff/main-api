@@ -407,6 +407,12 @@ export class AppController {
     // );
   }
 
+  @IgnoreProjectGuard()
+  @Get('manualFT/:amount')
+  async quickFT(@Param('amount') amount: number): Promise<any> {
+    await this.salesService.manualFtSale(amount);
+  }
+
   @Get('ctr/:refUrl/:page')
   async counterUpdate(
     @ProjectDetails() projectCache: ProjectCache,

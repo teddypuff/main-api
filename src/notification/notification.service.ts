@@ -232,7 +232,7 @@ export class NotificationService {
 
       const messageToSend = `<b>🚨 Teddypuff Presale Alert! 🚨</b>
 
-<b>Amount:</b> ${message.payAmount} ${message.payCurrency} 🦊
+<b>Amount:</b> ${message.payAmount} ${message.payCurrency}
 <b>Tokens:</b> ${message.issuedToken} Teddypuff Coins 🎉
 <b>Total:</b> $${message.usdWorth} 💵
 <b>Price Per Token:</b> $ ${message.tokenPrice} 📈
