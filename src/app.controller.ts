@@ -389,7 +389,14 @@ export class AppController {
     //   ); //
 
     //await this.reportsService.createDailyReport();
+
     await this.reportsService.createDailyReportByDate(date);
+
+    // await this.notificationService.sendNotification('purchase:live', {
+    //   usdAmount: 125,
+    //   tokenPrice: 0.001,
+    //   tokenQty: 251,
+    // });
 
     // await this.notificationService.sendDiscordMessage(
     //   'https://discord.com/api/webhooks/1223244253724147862/TToZup3uTVxa8JYx0NQztPjUZCgOQ8CNJVmENFAgHji8qpg9r5atkhhO7vS5-IkCf8-m',

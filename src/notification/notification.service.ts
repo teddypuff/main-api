@@ -16,6 +16,8 @@ import {
   TelegramMessage,
   TransactionModel,
 } from '~/models';
+import { NotificationGateway } from './gateways/notification.gateway';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class NotificationService {
@@ -23,6 +25,7 @@ export class NotificationService {
     private readonly sendGridApiService: SendGridApiService,
     private readonly brevoApiService: BrevoApiService,
     private readonly UserDetailsService: UserDetailsService,
+    private readonly notificationGateway: NotificationGateway,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -290,5 +293,20 @@ https://buy.Teddypufftoken.com/
       console.log('Error sending discord message', error);
       return;
     }
+  }
+
+  async sendWebsocketMessage(event: string, message: any) {
+    this.notificationGateway.sendNotification(event, message);
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async sendTestSocketMessage() {
+    const randomNumber = Math.floor(Math.random() * (250 - 5 + 1)) + 5;
+
+    await this.sendWebsocketMessage('purchase:live', {
+      usdAmount: randomNumber,
+      tokenPrice: 0.001,
+      tokenQty: randomNumber / 0.001,
+    });
   }
 }
