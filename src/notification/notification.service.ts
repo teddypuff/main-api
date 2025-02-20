@@ -188,20 +188,17 @@ export class NotificationService {
 
       message.photo = message.photo
         ? message.photo
-        : 'https://images.Teddypufftoken.com/telegram/flfbuy2.mp4';
+        : 'https://images.teddypufftoken.com/animation/tgpurchase.mp4';
 
-      const messageToSend = `<b>🚨 Teddypuff Presale Alert! 🚨</b>
+      const messageToSend = `<b>🚨 Another TeddyPuff Purchase! 🚨</b>
 
 <b>Amount:</b> ${message.payAmount} ${message.payCurrency}
-<b>Tokens:</b> ${message.issuedToken} Teddypuff Coins 🎉
+<b>Tokens:</b> ${message.issuedToken} $TDP! 🎉
 <b>Total:</b> $${message.usdWorth} 💵
 <b>Price Per Token:</b> $ ${message.tokenPrice} 📈
-<b>Launch Price:</b> $0.0015 🚀
 
-Get ready to unleash your inner fox! 🦊🌲
-
-<b>🔵 Snag More Teddypuff:</b> 
-https://buy.Teddypufftoken.com/
+<b>🔵 More Teddypuff:</b> 
+<a href="https://Teddypufftoken.com/?ref_url=telefgram">TeddyPuffToken.com</a>
 `;
 
       //<b>💸 Total Raised:</> $${message.total_raised}
