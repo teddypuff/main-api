@@ -17,7 +17,7 @@ export class DiscordMessage {
 
 export class EmailApiSettings {
   provider?: string;
-  from?: string;
+  from?: { email: string; name: string };
   name?: string = '';
   apiKey: string;
 }
