@@ -127,14 +127,12 @@ export class NowPaymentsService {
       body.payment_status == 'expired' ||
       body.payment_status == 'confirming'
     ) {
-      console.log('Wrong status');
       return null;
     }
 
     const purchaseDetails: NowPaymentsDescriptionODto = JSON.parse(
       `{${body?.order_description}}`,
     );
-    console.log('purchaseDetails', purchaseDetails);
 
     if (!purchaseDetails) {
       console.log('Wrong format');

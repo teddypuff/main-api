@@ -139,8 +139,6 @@ export class NowPaymentsController {
       headers,
     );
 
-    console.log('handledRequest', handledRequest);
-
     if (handledRequest) {
       const isTxExist = await this.transactionsService.getTransactionsByHash(
         `now_payments_id:${body.payment_id}`,
