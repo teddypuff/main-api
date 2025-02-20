@@ -190,16 +190,22 @@ export class NotificationService {
         ? message.photo
         : 'https://images.teddypufftoken.com/animation/tgpurchase.mp4';
 
-      const messageToSend = `<b>🚨 Another TeddyPuff Purchase! 🚨</b>
+      const messageToSend = `<b>🚨 TeddyPuff Purchase! 🚨</b>
 
-<b>Amount:</b> ${message.payAmount} ${message.payCurrency}
-<b>Tokens:</b> ${message.issuedToken} $TDP! 🎉
-<b>Total:</b> $${message.usdWorth} 💵
-<b>Price Per Token:</b> $ ${message.tokenPrice} 📈
+🧸 Another Cuteness just grabbed a big hug of $TDP! 💎🔥
 
-<b>🔵 More Teddypuff:</b> 
-<a href="https://Teddypufftoken.com/?ref_url=telefgram">TeddyPuffToken.com</a>
-`;
+<b>💰 Amount:</b> ${message.payAmount} ${message.payCurrency} 💥
+<b>🐻 TeddyPuff Collected:</b> ${message.issuedToken} $TDP 🎉
+<b>📊 Total Purchase:</b> $${message.usdWorth} 💰
+<b>💎 Price Per Token:</b> $ ${message.tokenPrice} 🚀
+<b>🌕 Launch Price:</b> $0.02 💨
+
+🔥 The Cuteness family is growing—who’s next to fluff up their bag?
+
+🐾 Soft, cuddly, but strong! Stack your $TDP before it’s too late!
+
+<b>🔵 Grab Your TeddyPuff Now !</b> 
+<a href="https://Teddypufftoken.com/?ref_url=telegram">TeddyPuffToken.com</a>`;
 
       //<b>💸 Total Raised:</> $${message.total_raised}
       //🚀 <b>Total Holders:</b> ${message.holders}
