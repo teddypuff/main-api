@@ -30,7 +30,7 @@ export class CounterService {
         await this.CounterRepository.save(record);
       } else {
         const { siteCode, refCode } = this.parseRefUrl(code);
-        const site = await this.getSiteNameByCode(siteCode);
+        const site = (await this.getSiteNameByCode(siteCode)) ?? '';
         const newRecord = this.CounterRepository.create({
           project,
           page,
