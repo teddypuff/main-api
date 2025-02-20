@@ -4,8 +4,7 @@ import { DailyReportsEntity } from '../data-source/entities/daily_reports.entity
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommonService } from '../common/common.service';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { report } from 'process';
+import { Cron } from '@nestjs/schedule';
 import { DailyReportsModel } from '~/models';
 
 @Injectable()

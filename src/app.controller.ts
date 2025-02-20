@@ -28,7 +28,6 @@ import { ReportsService } from './reports/reports.service';
 import { CounterService } from './counter/counter.service';
 import { BonusValidationRes, ProjectCache, TransactionModel } from './models';
 import { ConfigService } from '@nestjs/config';
-import { Currencies } from './common/models/enums/currencies.enum';
 import {
   UserLocation,
   UserLocationModel,
@@ -57,7 +56,7 @@ export class AppController {
   async getStatus(): Promise<any> {
     return {
       status: 'OK!',
-      version: '1.0.1',
+      version: '1.0.0',
     };
   }
 
@@ -294,127 +293,6 @@ export class AppController {
   }
 
   @IgnoreProjectGuard()
-  @Get('test/?:date')
-  async test(
-    @Body() body: UserRequestModel,
-    @Param('date') date: string,
-    @Headers() headers,
-    @Req() req,
-  ): Promise<any> {
-    // return (req.headers['cf-connecting-ip'] as string) || req.ip;
-    // console.log('currencyEnum', currencyEnumKey);
-    // const projects = await this.projectsService.getAllCachedProjects();
-    // const response = await this.notificationService.sendTelegramDocument(
-    //   projects[0].provider_settings.telegram_settings.bot_api_key,
-    //   projects[0].provider_settings.telegram_settings.chat_id,
-    //   {
-    //     pay_amount: 0.001,
-    //     pay_currency: 'ETH',
-    //     usd_worth: 1.2,
-    //     total_raised: 1.235,
-    //     token_price: 0.0006,
-    //     issued_token: 16775,
-    //     holders: 67,
-    //   },
-    // );
-    // const response = await this.blockchainService.getLatestBlockFromBlockchain();
-    // const response = await this.blockchainService.getNetworks();
-    // const response = await this.blockchainService.getLastBlocks();
-    //const response = await this.projectsService.getByName(this.configService.get("PROJECT_NAME"));
-    //const response = await this.projectsService.getAll();
-    // const response = await this.blockchainService.getTokenTransactions(
-    //   '0x4f67f2bc3ad0d9d5df0b85c57ff94e998a697cf3',
-    //   18260000,
-    //   19120627,
-    //   Networks.ETHEREUM,
-    //   '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-    // )-
-    // const response = await this.projectsService.getProjectsSummary();
-    //const response = await this.blockchainService.getLiveTokenPrices();
-    // const response = await this.blockchainService.getLiveTokenPricesFromCryptocompare();
-    //const response = await this.userRequestsService.userRequestHandler(body)
-    // await this.userDetailsService.userWalletBalanceHandler(
-    //   '0x4f67f2bc3ad0d9d5df0b85c57ff94e998a697cf3',
-    //   this.configService.get("PROJECT_NAME"),
-    // );
-    // const response = await this.salesService.createSale({
-    //   sale_status: SalesStatus.Completed,
-    //   project_name: this.configService.get("PROJECT_NAME"),
-    //   stage_number: 1,
-    //   token_price: 0.1,
-    //   issued_token_amount: 10,
-    //   sender_wallet_address: '0x4f67f2bc3ad0d9d5df0b85c57ff94e998a697cf3',
-    //   receiver_wallet_address: '0x4f67f2bc3ad0d9d5df0b85c57ff94e998a697cf3',
-    //   tx_hash: '0x4f67f2bc3ad0d9d5df0b85c57ff94e998a697cfvbnm',
-    //   total_paid_usd: 10,
-    //   total_paid_token: 10,
-    //   network: Networks.ETHEREUM,
-    //   pay_currency: Currencies.USDT_ERC20,
-    //   transaction_id: 3,
-    // });
-    //const response = req.ip;
-    // const response = await this.blockchainService.updateTransactions();
-    // const response = await this.blockchainService.getAllowdTokensCache();
-    // const response =
-    //   await this.stagesService.updateCurrentStagesForAllProjects();
-    //const project = await this.projectsService.getByNameFromCache(this.configService.get("PROJECT_NAME"));
-    //const response = await this.salesService.getUnIssuedBonusTransactions();
-    //console.log(response);
-    // const response = await this.notificationService.sendTransactionalEmail({
-    //   data: {
-    //     to: 'cryptopt88@gmail.com',
-    //     templateId: 1,
-    //     templateData: { name: 'cryptopt88@gmail.com' },
-    //   },
-    //   settings: {
-    //     provider: 'brevo',
-    //     from: 'no-reply@teddypufftoken.com',
-    //     name: 'teddypuff Token',
-    //     apiKey:
-    //       '',
-    //   },
-    // });
-    //return response;
-    // const response =
-    //   await this.userDetailsService.updateUserDetailsByWalletAddress(
-    //     '0x2b34349c9cb9a3dccb1de5fd2334479b0060135c',
-    //     {
-    //       project_name: this.configService.get("PROJECT_NAME"),
-    //       full_name: 'string1',
-    //       email: 'string1',
-    //       mobile: '',
-    //       ref_url: 'string',
-    //       country: 'string1',
-    //     },
-    //   ); //
-
-    //await this.reportsService.createDailyReport();
-
-    await this.reportsService.createDailyReportByDate(date);
-
-    // await this.notificationService.sendNotification('purchase:live', {
-    //   usdAmount: 125,
-    //   tokenPrice: 0.001,
-    //   tokenQty: 251,
-    // });
-
-    // await this.notificationService.sendDiscordMessage(
-    //   'https://discord.com/api/webhooks/1223244253724147862/TToZup3uTVxa8JYx0NQztPjUZCgOQ8CNJVmENFAgHji8qpg9r5atkhhO7vS5-IkCf8-m',
-    //   {
-    //     website: 'test',
-    //     status: 'test',
-    //     publish_date: new Date(),
-    //     usd_worth: 1,
-    //     pay_wallet: 'test',
-    //     pay_referrance: 'test',
-    //     link: 'test',
-    //     ref_url: 'test',
-    //   },
-    //   DiscordMessageType.MarketinRequest,
-    // );
-  }
-
-  @IgnoreProjectGuard()
   @Get('manualFT/:amount')
   async quickFT(@Param('amount') amount: number): Promise<any> {
     await this.salesService.manualFtSale(amount);
@@ -439,5 +317,16 @@ export class AppController {
     }
 
     await this.counterService.counterHandler(projectCache.name, page, refUrl);
+  }
+
+  @IgnoreProjectGuard()
+  @Get('test/?:date')
+  async test(
+    @Body() body: UserRequestModel,
+    @Param('date') date: string,
+    @Headers() headers,
+    @Req() req,
+  ): Promise<any> {
+    await this.reportsService.createDailyReportByDate(date);
   }
 }

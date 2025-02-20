@@ -17,7 +17,6 @@ import {
   TransactionModel,
 } from '~/models';
 import { NotificationGateway } from './gateways/notification.gateway';
-import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class NotificationService {
@@ -151,73 +150,31 @@ export class NotificationService {
     }
   }
 
-  // async sendTelegramMessage(
-  //   bot_key: string,
-  //   chatId: number,
-  //   message: TelegramMessage,
-  // ) {
-  //   try {
-  //     if (!bot_key || !chatId || !message) {
-  //       return;
-  //     }
-
-  //     const messageToSend = `
-  //     Presale Purchase Alert!
-  //     Amount: ${message.amount} 💰
-  //     Total: $ ${message.total_usd} 💵
-  //     Price Per Token: $${message.price} 📈
-  //     Total Raised: $${message.total_raised} 🚀
-
-  //     Buy Now: https://teddypufftoken.com/
-  //     `;
-  //     const base_url = `https://api.telegram.org/bot${bot_key}`;
-  //     await axios.get(`${base_url}/sendMessage`, {
-  //       params: { chat_id: chatId, text: messageToSend },
-  //     });
-  //   } catch (error) {
-  //     console.log('Error sending telegram message', error);
-  //     return;
-  //   }
-  // }
-
-  // async sendTelegramPhoto(
-  //   bot_key: string,
-  //   chatId: number,
-  //   message: TelegramMessage,
-  // ) {
-  //   try {
-  //     if (!bot_key || !chatId || !message) {
-  //       return;
-  //     }
-
-  //     message.photo = message.photo ? message.photo : 'logo.png';
-
-  //     const messageToSend = `<b>
-  //     Presale Purchase Alert!</b>
-
-  //     🔵🔵🔵🔵🔵
-
-  //     <b>Amount:</b> ${message.amount} 💰
-  //     <b>Total:</b> $${message.total_usd} 💵
-  //     <b>Price Per Token:</b> $${message.price} 📈
-  //     <b>Total Raised:</b> $${message.total_raised} 🚀
-
-  //     Buy Now: https://teddypufftoken.com/
-  //     `;
-  //     const base_url = `https://api.telegram.org/bot${bot_key}`;
-  //     await axios.get(`${base_url}/sendPhoto`, {
-  //       params: {
-  //         chat_id: chatId,
-  //         photo: message.photo,
-  //         caption: messageToSend,
-  //         parse_mode: 'HTML',
-  //       },
-  //     });
-  //   } catch (error) {
-  //     console.log('Error sending telegram message', error);
-  //     return;
-  //   }
-  // }
+  async sendBuyWebSocketMessage(
+    transactions: TransactionModel[],
+    projects: ProjectCache[],
+  ) {
+    try {
+      for await (const project of projects) {
+        const projectTransactions = transactions.filter(
+          (transaction) => transaction.project === project.name,
+        );
+        for await (const transaction of projectTransactions) {
+          await this.sendWebsocketMessage('purchase:live', {
+            usdAmount: +parseFloat(transaction.usdAmount?.toString()).toFixed(
+              2,
+            ),
+            tokenPrice: project.currentStage.tokenPrice,
+            tokenQty: Math.floor(
+              transaction.usdAmount / project.currentStage.tokenPrice,
+            ),
+          });
+        }
+      }
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
+    }
+  }
 
   async sendTelegramDocument(
     bot_key: string,
@@ -297,16 +254,5 @@ https://buy.Teddypufftoken.com/
 
   async sendWebsocketMessage(event: string, message: any) {
     this.notificationGateway.sendNotification(event, message);
-  }
-
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async sendTestSocketMessage() {
-    const randomNumber = Math.floor(Math.random() * (250 - 5 + 1)) + 5;
-
-    await this.sendWebsocketMessage('purchase:live', {
-      usdAmount: randomNumber,
-      tokenPrice: 0.001,
-      tokenQty: randomNumber / 0.001,
-    });
   }
 }
