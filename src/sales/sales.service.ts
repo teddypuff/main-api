@@ -2,7 +2,7 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { SalesEntity } from '../data-source/entities/sales.entity';
 import { IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cron } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { TransactionsService } from '../transactions/transactions.service';
 import { TransactionEntity } from '~/data-source/entities/transaction.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -324,12 +324,12 @@ export class SalesService {
     return response;
   }
 
-  // @Cron(CronExpression.EVERY_30_MINUTES)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async autoFtSale() {
     let payToken: Currencies;
     let tokenAmount: number;
     const randomMinute = Math.floor(Math.random() * 29) + 1;
-    let randomAmount = (Math.floor(Math.random() * 3000) + 1000) / 100;
+    let randomAmount = (Math.floor(Math.random() * 4000) + 1000) / 100;
 
     const randomToken = Math.floor(Math.random() * 2) + 1;
     const tokenPrices: TokenPricesModel =
@@ -395,6 +395,12 @@ export class SalesService {
         issuedToken: issuedTokens,
       },
     );
+
+    await this.notificationService.sendWebsocketMessage('purchase:live', {
+      usdAmount: randomAmount,
+      tokenPrice: project.currentStage.tokenPrice,
+      tokenQty: issuedTokens,
+    });
   }
 
   async manualFtSale(amount: number) {
@@ -454,6 +460,11 @@ export class SalesService {
         issuedToken: issuedTokens,
       },
     );
+    await this.notificationService.sendWebsocketMessage('purchase:live', {
+      usdAmount: amount,
+      tokenPrice: project.currentStage.tokenPrice,
+      tokenQty: issuedTokens,
+    });
   }
 
   @Cron('30 * * * * *') // 30th second of every minute
