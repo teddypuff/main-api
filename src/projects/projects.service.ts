@@ -6,7 +6,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { StagesService } from '~/stages/stages.service';
 import { ProjectEntity } from '~/data-source/entities';
-import { ProjectCache, ProjectProviderSettings } from '~/models';
+import { ProjectCache } from '~/models';
 
 @Injectable()
 export class ProjectsService {

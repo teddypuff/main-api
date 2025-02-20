@@ -7,8 +7,6 @@ import {
   HttpStatus,
   Param,
   Post,
-  Req,
-  Inject,
 } from '@nestjs/common';
 import { NowPaymentsService } from './now-payments.service';
 

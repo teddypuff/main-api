@@ -2,7 +2,7 @@ import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { SalesEntity } from '../data-source/entities/sales.entity';
 import { IsNull, MoreThan, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Cron, CronExpression, Interval } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { TransactionsService } from '../transactions/transactions.service';
 import { TransactionEntity } from '~/data-source/entities/transaction.entity';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -15,7 +15,6 @@ import { BonusesService } from '../bonuses/bonuses.service';
 import { CommonService } from '../common/common.service';
 import { Currencies } from '~/common/models/enums/currencies.enum';
 import { ProjectCache, SalesModel, TokenPricesModel } from '~/models';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SalesService {
@@ -28,7 +27,6 @@ export class SalesService {
     private readonly notificationService: NotificationService,
     private readonly bonusesService: BonusesService,
     private readonly commonService: CommonService,
-    private readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -247,51 +245,6 @@ export class SalesService {
 
         // sale_details: JSON.stringify(transaction),
       };
-
-      sales.push(sale);
-      if (userRequest) {
-        await this.userRequestsService.deleteUserRequestById(userRequest.id);
-      }
-    }
-    await this.createSales(sales);
-    await this.notificationService.sendReceiptEmails(sales, projects);
-  }
-
-  async issueSoldTokens2(pendingTransactions: TransactionEntity[]) {
-    const sales: SalesModel[] = [];
-    const projects: ProjectCache[] = await this.cacheManager.get('projects');
-
-    for await (const transaction of pendingTransactions) {
-      const currentStage = projects.find(
-        (project) => project.name === transaction.project,
-      ).currentStage;
-
-      const userRequest = await this.userRequestsService.getUserRequest({
-        userWalletAddress: transaction.fromAddress.toLowerCase(),
-        projectName: transaction.project,
-      });
-
-      const sale = <SalesModel>{
-        transactionId: transaction.id,
-        projectName: transaction.project,
-        userWalletAddress: transaction.fromAddress,
-        usdWorth: transaction.usdAmount,
-        saleType: SalesTypes.Purchase,
-
-        tokenPrice: currentStage.tokenPrice,
-        stageNumber: currentStage.stageNumber,
-        issuedTokenAmount: Math.floor(
-          transaction.usdAmount * (1 / currentStage.tokenPrice),
-        ),
-
-        bonusCode: userRequest?.promoCode,
-        refCode: userRequest?.refCode,
-        refUrl: userRequest?.refUrl,
-        country: userRequest?.country,
-        ip: userRequest?.ip,
-
-        // sale_details: JSON.stringify(transaction),
-      };
       await this.createSale(sale);
       sales.push(sale);
 
@@ -305,6 +258,10 @@ export class SalesService {
       pendingTransactions,
       projects,
     );
+    await this.notificationService.sendBuyWebSocketMessage(
+      pendingTransactions,
+      projects,
+    );
   }
 
   async getSalesCountByBonusCode(bonusCode: string): Promise<number> {
@@ -313,45 +270,6 @@ export class SalesService {
     });
     return paymentCount;
   }
-
-  // experimental drizzle method\
-  //
-  // async getDailyNumbers(): Promise<Object> {
-  //   const result = await this.db
-  //     .select({
-  //       project: schema.transactions.project,
-  //       date: sql`CAST(${schema.transactions.createdAt}) AS date`,
-  //       txCount: count(schema.transactions.id),
-  //       unique: countDistinct(schema.transactions.fromAddress),
-  //       totalConfirmed: sum(schema.transactions.usdAmount).mapWith(Number),
-  //       biggest: max(schema.transactions.usdAmount),
-  //       average: sql`CAST((SUM(${schema.transactions.usdAmount})/"COUNT"(${schema.transactions.id})) AS money)`,
-
-  //       q1Tx: sql`CONCAT(CAST(CAST(COUNT(CASE WHEN EXTRACT(HOUR FROM ${schema.transactions.createdAt}) >= 0 AND EXTRACT(HOUR FROM ${schema.transactions.createdAt}) < 0 THEN ${schema.transactions.id} END) AS DECIMAL(5,2)) / CAST(count(${schema.transactions.id}) AS DECIMAL(5,2)) AS DECIMAL(10,2))* 100 , '%'),`,
-  //       q2Tx: sql`CONCAT(CAST(CAST(COUNT(CASE WHEN EXTRACT(HOUR FROM ${schema.transactions.createdAt}) >= 0 AND EXTRACT(HOUR FROM ${schema.transactions.createdAt}) < 7 THEN ${schema.transactions.id} END) AS DECIMAL(5,2)) / CAST(count(${schema.transactions.id}) AS DECIMAL(5,2)) AS DECIMAL(10,2))* 100 , '%'),`,
-  //       q3Tx: sql`CONCAT(CAST(CAST(COUNT(CASE WHEN EXTRACT(HOUR FROM ${schema.transactions.createdAt}) >= 0 AND EXTRACT(HOUR FROM ${schema.transactions.createdAt}) < 12 THEN ${schema.transactions.id} END) AS DECIMAL(5,2)) / CAST(count(${schema.transactions.id}) AS DECIMAL(5,2)) AS DECIMAL(10,2))* 100 , '%'),`,
-  //       q4Tx: sql`CONCAT(CAST(CAST(COUNT(CASE WHEN EXTRACT(HOUR FROM ${schema.transactions.createdAt}) >= 0 AND EXTRACT(HOUR FROM ${schema.transactions.createdAt}) < 18 THEN ${schema.transactions.id} END) AS DECIMAL(5,2)) / CAST(count(${schema.transactions.id}) AS DECIMAL(5,2)) AS DECIMAL(10,2))* 100 , '%'),`,
-
-  //       countOver50: sql`COUNT(CASE WHEN ${schema.transactions.usdAmount}>= 50 THEN ${schema.transactions.id} END)`,
-  //       countOver100: sql`COUNT(CASE WHEN ${schema.transactions.usdAmount}>= 100 THEN ${schema.transactions.id} END)`,
-  //       countOver250: sql`COUNT(CASE WHEN ${schema.transactions.usdAmount}>= 250 THEN ${schema.transactions.id} END)`,
-  //       countOver500: sql`COUNT(CASE WHEN ${schema.transactions.usdAmount}>= 500 THEN ${schema.transactions.id} END)`,
-
-  //       eth: sql`CONCAT(CAST(CAST(sum(CASE WHEN currency = 'eth' THEN ${schema.transactions.usdAmount} ELSE 0 END) AS NUMERIC(10,2)) / sum(${schema.transactions.usdAmount}) * 100 AS NUMERIC(10,2)), '%')`,
-  //       bnb: sql`CONCAT(CAST(CAST(sum(CASE WHEN currency = 'bnb' THEN ${schema.transactions.usdAmount} ELSE 0 END) AS NUMERIC(10,2)) / sum(${schema.transactions.usdAmount}) * 100 AS NUMERIC(10,2)), '%')`,
-  //       matic: sql`CONCAT(CAST(CAST(sum(CASE WHEN currency = 'matic' THEN ${schema.transactions.usdAmount} ELSE 0 END) AS NUMERIC(10,2)) / sum(${schema.transactions.usdAmount}) * 100 AS NUMERIC(10,2)), '%')`,
-  //       usdtErc20: sql`CONCAT(CAST(CAST(sum(CASE WHEN currency = 'usdt_erc20' THEN ${schema.transactions.usdAmount} ELSE 0 END) AS NUMERIC(10,2)) / sum(${schema.transactions.usdAmount}) * 100 AS NUMERIC(10,2)), '%')`,
-  //       usdtBep20: sql`CONCAT(CAST(CAST(sum(CASE WHEN currency = 'busd_bep20' THEN ${schema.transactions.usdAmount} ELSE 0 END) AS NUMERIC(10,2)) / sum(${schema.transactions.usdAmount}) * 100 AS NUMERIC(10,2)), '%')`,
-  //     })
-  //     .from(schema.transactions)
-  //     .groupBy(
-  //       schema.transactions.project,
-  //       sql`CAST(${schema.transactions.createdAt}) AS date`,
-  //     )
-  //     .orderBy(desc(sql`CAST(${schema.transactions.createdAt} AS date`));
-
-  //   return result && result.length ? result[0] : null;
-  // }
 
   async getDailyNumbers(): Promise<number> {
     const response = await this.salesRepository.query(
@@ -388,27 +306,6 @@ export class SalesService {
     return response;
   }
 
-  // experimental drizzle method
-  //
-  // async getDailyNumbersByRefCode(refCode: string): Promise<any> {
-  //   if (!refCode || refCode.trim() === '' || refCode.length > 35) {
-  //     return;
-  //   }
-  //   const response = await this.db
-  //     .select({
-  //       date: sql`cast(created_date as date)`,
-  //       txCount: count(schema.sales.id),
-  //       totalConfirmed: sum(schema.sales.usdWorth).mapWith(Number),
-  //       average: sql`cast((sum(${schema.sales.usdWorth})) / count(${schema.sales.id})) as money)`,
-  //     })
-  //     .from(schema.sales)
-  //     .where(eq(schema.sales.refUrl, refCode.trim()))
-  //     .groupBy(sql`cast(created_date as date)`)
-  //     .orderBy(desc(sql`cast(created_date as date)`));
-
-  //   return response;
-  // }
-
   async getDailyNumbersByRefCode(refCode: string): Promise<any> {
     if (!refCode || refCode.trim() === '' || refCode.length > 35) {
       return;
@@ -427,7 +324,6 @@ export class SalesService {
     return response;
   }
 
-  //@Cron('0 */10 * * * *')
   // @Cron(CronExpression.EVERY_30_MINUTES)
   async autoFtSale() {
     let payToken: Currencies;
@@ -568,7 +464,7 @@ export class SalesService {
       if (pendingTransactions.length === 0) {
         return;
       }
-      await this.issueSoldTokens2(pendingTransactions);
+      await this.issueSoldTokens(pendingTransactions);
       await this.transactionsService.completeTransactions(pendingTransactions);
       for await (const transaction of pendingTransactions) {
         await this.userWalletBalanceHandler(
