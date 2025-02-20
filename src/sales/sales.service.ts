@@ -395,6 +395,12 @@ export class SalesService {
         issuedToken: issuedTokens,
       },
     );
+
+    await this.notificationService.sendWebsocketMessage('purchase:live', {
+      usdAmount: randomAmount,
+      tokenPrice: project.currentStage.tokenPrice,
+      tokenQty: issuedTokens,
+    });
   }
 
   async manualFtSale(amount: number) {
@@ -454,6 +460,11 @@ export class SalesService {
         issuedToken: issuedTokens,
       },
     );
+    await this.notificationService.sendWebsocketMessage('purchase:live', {
+      usdAmount: amount,
+      tokenPrice: project.currentStage.tokenPrice,
+      tokenQty: issuedTokens,
+    });
   }
 
   @Cron('30 * * * * *') // 30th second of every minute
