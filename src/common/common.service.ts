@@ -151,4 +151,16 @@ export class CommonService {
   async getTokenPrices(): Promise<TokenPricesModel> {
     return await this.cacheManager.get(`token_prices`);
   }
+
+  formatDateTime(isoString: string): string {
+    const date = new Date(isoString);
+
+    const day = date.getUTCDate().toString().padStart(2, '0');
+    const month = (date.getUTCMonth() + 1).toString().padStart(2, '0'); // Ay 0'dan başlar, +1 ekliyoruz.
+    const year = date.getUTCFullYear();
+    const hours = date.getUTCHours().toString().padStart(2, '0');
+    const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
 }

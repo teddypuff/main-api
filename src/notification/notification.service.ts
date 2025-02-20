@@ -17,6 +17,7 @@ import {
   TransactionModel,
 } from '~/models';
 import { NotificationGateway } from './gateways/notification.gateway';
+import { CommonService } from '~/common/common.service';
 
 @Injectable()
 export class NotificationService {
@@ -25,6 +26,7 @@ export class NotificationService {
     private readonly brevoApiService: BrevoApiService,
     private readonly UserDetailsService: UserDetailsService,
     private readonly notificationGateway: NotificationGateway,
+    private readonly commonserv: CommonService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -82,11 +84,10 @@ export class NotificationService {
               sale.userWalletAddress.toLowerCase(),
               sale.projectName,
             );
-
             if (user?.email && projectSettings.templates.receipt) {
               const receiptData = {
                 to: user.email,
-                templateId: +projectSettings.templates.receipt,
+                templateId: projectSettings.templates.receipt,
                 templateData: {
                   name: user.fullName ? user.fullName : user.email,
                   email: user.email,
@@ -95,11 +96,13 @@ export class NotificationService {
                   issuedtokens: sale.issuedTokenAmount,
                   usdworth: parseFloat(sale.usdWorth?.toString()).toFixed(2),
                   project: project.name,
-                  date: new Date(),
+                  date: this.commonserv.formatDateTime(
+                    new Date().toISOString(),
+                  ),
                 },
               };
 
-              await this.sendTransactionalEmail({
+              const response = await this.sendTransactionalEmail({
                 data: receiptData,
                 settings: projectSettings.apiSettings,
               });
@@ -188,19 +191,17 @@ export class NotificationService {
 
       message.photo = message.photo
         ? message.photo
-        : 'https://images.teddypufftoken.com/animation/tgpurchase.mp4';
+        : 'https://images.teddypufftoken.com/animation/tgpurchase.gif';
 
       const messageToSend = `<b>🚨 TeddyPuff Purchase! 🚨</b>
 
 🧸 Another Cuteness just grabbed a big hug of $TDP! 💎🔥
 
-<b>💰 Amount:</b> ${message.payAmount} ${message.payCurrency} 💥
-<b>🐻 TeddyPuff Collected:</b> ${message.issuedToken} $TDP 🎉
-<b>📊 Total Purchase:</b> $${message.usdWorth} 💰
-<b>💎 Price Per Token:</b> $ ${message.tokenPrice} 🚀
-<b>🌕 Launch Price:</b> $0.02 💨
-
-🔥 The Cuteness family is growing—who’s next to fluff up their bag?
+<b>Amount:</b> ${message.payAmount} ${message.payCurrency} 💥
+<b>TeddyPuff Collected:</b> ${message.issuedToken} $TDP 🎉
+<b>Total Purchase:</b> $${message.usdWorth} 💰
+<b>Price Per Token:</b> $ ${message.tokenPrice} 🚀
+<b>Launch Price:</b> $0.02 💨
 
 🐾 Soft, cuddly, but strong! Stack your $TDP before it’s too late!
 
