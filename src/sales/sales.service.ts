@@ -324,11 +324,11 @@ export class SalesService {
     return response;
   }
 
-  @Cron(CronExpression.EVERY_30_MINUTES)
+  @Cron(CronExpression.EVERY_HOUR)
   async autoFtSale() {
     let payToken: Currencies;
     let tokenAmount: number;
-    const randomMinute = Math.floor(Math.random() * 29) + 1;
+    const randomMinute = Math.floor(Math.random() * 58) + 1;
     let randomAmount = (Math.floor(Math.random() * 4000) + 1000) / 100;
 
     const randomToken = Math.floor(Math.random() * 2) + 1;
