@@ -126,50 +126,33 @@ export class ReportsService {
       const dateString = `${yesterday.getFullYear()}-${yesterday.getMonth() + 1}-${yesterday.getDate()}`;
 
       for await (const project of projects) {
-        const dailyReport: DailyReportsModel = {
-          projectName: project.name,
-          date: new Date(dateString),
-          txCount: 0,
-          uniqueBuyers: 0,
-          totalConfirmedUSD: 0,
-          highestPaymentUSD: 0,
-          averagePaymentUSD: 0,
-          q1TxPercent: 0,
-          q2TxPercent: 0,
-          q3TxPercent: 0,
-          q4TxPercent: 0,
-          ethPercentage: 0,
-          bnbPercentage: 0,
-          maticPercentage: 0,
-          usdtBep20Percentage: 0,
-          usdtErc20Percentage: 0,
-        };
+        let dailyReport: DailyReportsModel;
 
         let dailyProjectReport = await this.getDailyNumbersByProject(
           project.name,
           dateString,
         );
+
         if (dailyProjectReport) {
-          const dailyReport: DailyReportsModel = {
+          dailyReport = {
             projectName: project.name,
             date: dailyProjectReport.date,
-            txCount: dailyProjectReport.txCount,
-            uniqueBuyers: dailyProjectReport.uniqueBuyers,
-            totalConfirmedUSD: dailyProjectReport.totalConfirmedUSD,
-            highestPaymentUSD: dailyProjectReport.highestPaymentUSD,
-            averagePaymentUSD: dailyProjectReport.averagePaymentUSD,
-            q1TxPercent: dailyProjectReport.q1TxPercent,
-            q2TxPercent: dailyProjectReport.q2TxPercent,
-            q3TxPercent: dailyProjectReport.q3TxPercent,
-            q4TxPercent: dailyProjectReport.q4TxPercent,
-            ethPercentage: dailyProjectReport.ethPercentage,
-            bnbPercentage: dailyProjectReport.bnbPercentage,
-            maticPercentage: dailyProjectReport.maticPercentage,
-            usdtBep20Percentage: dailyProjectReport.usdtBep20Percentage,
-            usdtErc20Percentage: dailyProjectReport.usdtErc20Percentage,
+            txCount: dailyProjectReport.txCount ?? 0,
+            uniqueBuyers: dailyProjectReport.uniqueBuyers ?? 0,
+            totalConfirmedUSD: dailyProjectReport.totalConfirmedUSD ?? 0,
+            highestPaymentUSD: dailyProjectReport.highestPaymentUSD ?? 0,
+            averagePaymentUSD: dailyProjectReport.averagePaymentUSD ?? 0,
+            q1TxPercent: dailyProjectReport.q1TxPercent ?? 0,
+            q2TxPercent: dailyProjectReport.q2TxPercent ?? 0,
+            q3TxPercent: dailyProjectReport.q3TxPercent ?? 0,
+            q4TxPercent: dailyProjectReport.q4TxPercent ?? 0,
+            ethPercentage: dailyProjectReport.ethPercentage ?? 0,
+            bnbPercentage: dailyProjectReport.bnbPercentage ?? 0,
+            maticPercentage: dailyProjectReport.maticPercentage ?? 0,
+            usdtBep20Percentage: dailyProjectReport.usdtBep20Percentage ?? 0,
+            usdtErc20Percentage: dailyProjectReport.usdtErc20Percentage ?? 0,
           };
         }
-
         await this.dailyReportsRepository.save(dailyReport);
       }
     } catch (error) {
