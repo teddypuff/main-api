@@ -35,6 +35,7 @@ export enum Currencies {
   MATIC_BSC = 'maticbsc',
   MATIC_USDCE = 'maticusdce',
   XRP = 'xrp',
+  XLM = 'xlm'
   KAS = 'kas',
   SHIB = 'shib',
   SHIB_BSC = 'shibbsc',
