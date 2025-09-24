@@ -540,7 +540,7 @@ export class BlockchainService {
     await this.cacheManager.set(`allowed_tokens`, allowedTokens);
   }
 
-  @Cron('1 * * * * *') // first second of every minute
+  //@Cron('1 * * * * *') // first second of every minute
   async updateTransactions() {
     try {
       const projects: ProjectCache[] = await this.cacheManager.get(`projects`);
