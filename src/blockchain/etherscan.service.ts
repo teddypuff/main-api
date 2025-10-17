@@ -3,20 +3,22 @@ import { TransactionsService } from '~/transactions/transactions.service';
 import { Networks } from '~/common/models/enums/network.enum';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { Cron, CronExpression, Interval } from '@nestjs/schedule';
 import { Currencies } from '~/common/models/enums/currencies.enum';
 import { CommonService } from '~/common/common.service';
 
-import { TransactionModel } from '~/models';
+import { MappedTransaction, TransactionModel, WalletHistory } from '~/models';
 import { BlockchainService } from './blockchain.service';
+
+import { NetworksService } from './networks.service';
 import {
   EtherscanApiParams,
+  EtherscanTxResponse,
   EtherscanV2Actions,
   EtherscanV2Modules,
   TxResult,
-} from '~/common/models/enums/etherscan-api';
-import { NetworksService } from './networks.service';
+} from '~/common/models/etherscan-api';
 
 @Injectable()
 export class EtherscanService {
@@ -30,14 +32,13 @@ export class EtherscanService {
 
   // oninit
   async onModuleInit() {
-    const allTxs = await this.getAllTxs(
-      Networks.ETHEREUM,
-      '0x0000',
-      21807050,
-      21807053,
-    );
-
-    console.log('All TXs from Etherscan: ', allTxs);
+    // const allTxs = await this.getAllTxs(
+    //   Networks.ETHEREUM,
+    //   '0x000000000000000000000000000000000000000000',
+    //   23598123,
+    //   23598126,
+    // );
+    // console.log('All TXs from Etherscan: ', allTxs);
   }
 
   keys = {
@@ -195,7 +196,7 @@ export class EtherscanService {
   //   };
   // }
 
-  //@Cron(CronExpression.EVERY_10_SECONDS) // first second of every minute
+  @Cron(CronExpression.EVERY_10_SECONDS) // first second of every minute
   async updateTransactions() {
     try {
       const projects = await this.commonService.getCachedProjects();
@@ -209,8 +210,9 @@ export class EtherscanService {
 
       for await (const network of networks) {
         for await (const wallet of projectWallets) {
+          let nativeCoinTxs: MappedTransaction[] = [];
           console.log(
-            `No new blocks for ${network.name}. Skipping...  db.latestBlock: ${network.latestBlock}, blockchain.latestBlocks: ${latestBlocksFromBlockchain[network.name]}`,
+            `${network.name}. ${wallet} -> db.latestBlock: ${network.latestBlock}, blockchain.latestBlocks: ${latestBlocksFromBlockchain[network.name]}`,
           );
 
           if (network.latestBlock >= latestBlocksFromBlockchain[network.name]) {
@@ -218,12 +220,24 @@ export class EtherscanService {
             continue;
           }
 
-          const walletTransactions = await this.getTransactions(
-            wallet,
+          const walletTransactions = await this.getAllTxs(
             network.name,
+            wallet,
+            network.latestBlock,
+            latestBlocksFromBlockchain[network.name],
           );
 
-          const data = walletTransactions.map((item) => {
+          if (walletTransactions.normal.length > 0) {
+            nativeCoinTxs = await this.nativeTokenTransactionsHandler(
+              network.name,
+              walletTransactions.normal,
+              wallet,
+            );
+          }
+
+          console.log(nativeCoinTxs);
+
+          const data = nativeCoinTxs.map((item) => {
             return <TransactionModel>{
               fromAddress: item.from,
               toAddress: item.to,
@@ -238,20 +252,17 @@ export class EtherscanService {
             };
           });
           await this.transactionService.createTransactionsInsert(data);
+
+          await this.commonService.waitSeconds(1);
         }
 
-        network.latestBlock = latestBlocksFromBlockchain[network.name];
-        await this.networksService.updateNetworkRecord(network);
+        // network.latestBlock = latestBlocksFromBlockchain[network.name];
+        // await this.networksService.updateNetworkRecord(network);
       }
     } catch (error) {
       console.log('updateTransactions Error: ', error.message, new Date());
       //throw new HttpException(error.message, error.status);
     }
-  }
-
-  getTransactions(wallet: string, name: Networks) {
-    // console.log('Getting transactions from Etherscan for ', wallet, name);
-    return [];
   }
 
   // @Cron(CronExpression.EVERY_10_SECONDS)
@@ -267,10 +278,12 @@ export class EtherscanService {
     walletAddress: string,
     startBlock: number,
     endBlock: number,
-  ): Promise<any> {
+  ): Promise<TxResult | undefined> {
     try {
-      const [normalRes, internalRes, tokenRes] = await Promise.all([
-        axios.get(this.etherScanUrl, {
+      const [normalRes, internalRes, tokenRes]: AxiosResponse<{
+        result: EtherscanTxResponse[];
+      }>[] = await Promise.all([
+        axios.get<{ result: EtherscanTxResponse[] }>(this.etherScanUrl, {
           params: {
             ...this.getEtherscanApiParams(
               network,
@@ -283,7 +296,7 @@ export class EtherscanService {
           },
         }),
 
-        axios.get(this.etherScanUrl, {
+        axios.get<{ result: EtherscanTxResponse[] }>(this.etherScanUrl, {
           params: {
             ...this.getEtherscanApiParams(
               network,
@@ -296,7 +309,7 @@ export class EtherscanService {
           },
         }),
 
-        axios.get(this.etherScanUrl, {
+        axios.get<{ result: EtherscanTxResponse[] }>(this.etherScanUrl, {
           params: {
             ...this.getEtherscanApiParams(
               network,
@@ -319,5 +332,55 @@ export class EtherscanService {
     } catch (error) {
       console.log('getAllTxs Error: ', error.message);
     }
+  }
+
+  async nativeTokenTransactionsHandler(
+    network: Networks,
+    transactions: EtherscanTxResponse[],
+    walletAddress,
+  ): Promise<MappedTransaction[]> {
+    const response: MappedTransaction[] = [];
+    for await (const transaction of transactions) {
+      if (transaction?.to?.toLowerCase() !== walletAddress.toLowerCase()) {
+        continue;
+      }
+
+      let token;
+      let tokenPrice = 0;
+
+      switch (network) {
+        case Networks.ETHEREUM:
+          token = Currencies.ETHEREUM;
+          tokenPrice = +(await this.blockchainService.getTokenPrices()).ETH;
+          break;
+        case Networks.BSC:
+          token = Currencies.BNB;
+          tokenPrice = +(await this.blockchainService.getTokenPrices()).BNB;
+          break;
+        case Networks.POLYGON:
+          token = Currencies.MATIC;
+          tokenPrice = +(await this.blockchainService.getTokenPrices()).MATIC;
+          break;
+      }
+
+      const value = this.blockchainService.convertValueToNumber(
+        transaction.value,
+        18,
+      );
+      const usdWorth = value * tokenPrice;
+
+      response.push({
+        from: transaction.from.toLowerCase(),
+        to: transaction.to.toLowerCase(),
+        token: token,
+        usdWorth: +usdWorth.toFixed(2),
+        value: value,
+        timestamp: new Date(+transaction.timeStamp * 1000),
+        blockNumber: +transaction.blockNumber,
+        hash: transaction.hash,
+      });
+    }
+
+    return response;
   }
 }
