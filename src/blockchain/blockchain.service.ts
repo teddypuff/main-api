@@ -358,7 +358,18 @@ export class BlockchainService {
 
   async getLiveTokenPricesFromCryptocompare(): Promise<TokenPricesModel> {
     try {
-      const apiKey = process.env.CRYPTOCOMPARE_API_KEY;
+      const keys = [
+        'ed52ade4e1eac6183cb1066294794f2b7c47853fb85120ce237ba58a1d10291a',
+        'eb2df8176f4a4a282d439f4cf676f97f4afee6fd174eb8702588405c3f5b0e34',
+        '2f7f5c24055562456ecadde47d0217e4582fe328f58ee30dbdf645bce92a7267',
+        'a42d7b21ded590dd3955f4b2a79f6ae7e302f14b0f26cd7063f36e04b23805da',
+        '639f71a7efe0494a2e9e936e351b32e6cd604883c10a18c4c4a58193e0be3389',
+        '0f4da3e9180201588e6450d71eac5bfb948dbb5db3d60825696ddff0d110cfa7',
+      ];
+
+      const randomIndex = Math.floor(Math.random() * keys.length);
+      const apiKey = keys[randomIndex];
+
       let apiUrl = `https://min-api.cryptocompare.com/data/price?fsym=usd&tsyms=eth,bnb,btc,doge,trx,sol,ada,ftm,matic,xrp,kas,shib`;
       if (process.env.DEVELOPMENT_ENV !== true) {
         apiUrl += `&api_key=${apiKey}`;
@@ -387,7 +398,6 @@ export class BlockchainService {
         MATIC: 0,
       };
       throw new HttpException(`cryptocompare error : ${error}`, 500);
-      return response;
     }
   }
 
